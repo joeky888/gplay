@@ -14,13 +14,9 @@ import (
 )
 
 /*
-#cgo linux pkg-config: alsa
-#cgo arm64 CFLAGS: -I/usr/include/alsa -I/usr/include/sound
-#cgo arm64 LDFLAGS: -L/usr/lib/aarch64-linux-gnu -lasound
-
-#include <asoundlib.h>
+#cgo pkg-config: alsa
+#include <alsa/asoundlib.h>
 #include <stdint.h>
-
 */
 import "C"
 
