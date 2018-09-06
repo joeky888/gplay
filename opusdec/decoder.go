@@ -57,7 +57,7 @@ func (dec *Decoder) Init(sample_rate int, channels int) error {
 		C.opus_int32(sample_rate),
 		C.int(channels))
 	if errno != 0 {
-		return Error(errno)
+		panic(errno)
 	}
 	return nil
 }
@@ -82,7 +82,7 @@ func (dec *Decoder) Decode(data []byte, pcm []int16) (int, error) {
 		C.int(cap(pcm)),
 		0))
 	if n < 0 {
-		return 0, Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return n, nil
 }
@@ -107,7 +107,7 @@ func (dec *Decoder) DecodeFloat32(data []byte, pcm []float32) (int, error) {
 		C.int(cap(pcm)),
 		0))
 	if n < 0 {
-		return 0, Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return n, nil
 }
@@ -134,7 +134,7 @@ func (dec *Decoder) DecodeFEC(data []byte, pcm []int16) error {
 		C.int(cap(pcm)),
 		1))
 	if n < 0 {
-		return Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return nil
 }
@@ -160,7 +160,7 @@ func (dec *Decoder) DecodeFECFloat32(data []byte, pcm []float32) error {
 		C.int(cap(pcm)),
 		1))
 	if n < 0 {
-		return Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return nil
 }
@@ -171,7 +171,7 @@ func (dec *Decoder) LastPacketDuration() (int, error) {
 	var samples C.opus_int32
 	res := C.bridge_decoder_get_last_packet_duration(dec.p, &samples)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res != C.OPUS_OK")
 	}
 	return int(samples), nil
 }
