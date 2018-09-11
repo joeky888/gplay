@@ -58,6 +58,14 @@ func FromFile(filename string) (wavinfo string, err error) {
 		return "", errors.New("nil wav reader")
 	}
 
+	defaultCard := func() string {
+		if os.Getenv("GOARCH") == "amd64" {
+			return "default"
+		} else {
+			return "default:CARD=mtsndcard"
+		}
+	}()
+
 	// print .WAV info
 	wavinfo = wavReader.String()
 	fileinfo := wavReader.GetFile()
@@ -70,7 +78,7 @@ func FromFile(filename string) (wavinfo string, err error) {
 		samplerate = 44100
 	}
 	fmt.Println(samplerate)
-	out, err := alsa.NewPlaybackDevice("default", 1, alsa.FormatS16LE, samplerate, alsa.BufferParams{})
+	out, err := alsa.NewPlaybackDevice(defaultCard, 1, alsa.FormatS16LE, samplerate, alsa.BufferParams{})
 	if err != nil {
 		return wavinfo, errors.New(fmt.Sprint("alsa:", err))
 	}
