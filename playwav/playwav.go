@@ -59,10 +59,10 @@ func FromFile(filename string) (wavinfo string, err error) {
 	}
 
 	defaultCard := func() string {
-		if os.Getenv("GOARCH") == "amd64" {
-			return "default"
-		} else {
+		if os.Getenv("GOARCH") == "arm64" || os.Getenv("GOARCH") == "arm" {
 			return "default:CARD=mtsndcard"
+		} else {
+			return "default"
 		}
 	}()
 
