@@ -28,10 +28,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/cocoonlife/goalsa"
+	"github.com/joeky888/alsa"
 	"github.com/cryptix/wav"
 
 )
+
+func int16tobyte(x int16) uint8 {
+	buf := int32(x)
+	return uint8((buf + 32768) * (255 - 0) / (32767 + 32768))
+}
 
 func FromFile(filename string) (wavinfo string, err error) {
 
@@ -58,13 +63,56 @@ func FromFile(filename string) (wavinfo string, err error) {
 		return "", errors.New("nil wav reader")
 	}
 
-	defaultCard := func() string {
-		if os.Getenv("GOARCH") == "arm64" || os.Getenv("GOARCH") == "arm" {
-			return "default:CARD=mtsndcard"
-		} else {
-			return "default"
-		}
-	}()
+	// defaultCard := func() string {
+	// 	if os.Getenv("GOARCH") == "arm64" || os.Getenv("GOARCH") == "arm" {
+	// 		return "default:CARD=mtsndcard"
+	// 	} else {
+	// 		return "default"
+	// 	}
+	// }()
+
+	cards, err := alsa.OpenCards()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer alsa.CloseCards(cards)
+	devices, _ := cards[0].Devices()
+
+	fmt.Println(devices[0])
+	device := devices[0]
+
+	if err = device.Open(); err != nil {
+		panic(err)
+	}
+	const bufsize = 4096
+	wantPeriodSize := 2048 // 46ms @ 44100Hz
+
+	periodSize, err := device.NegotiatePeriodSize(wantPeriodSize)
+	if err != nil {
+		panic(err)
+	}
+	bufferSize, err := device.NegotiateBufferSize(wantPeriodSize * 2)
+	if err != nil {
+		panic(err)
+	}
+	if err = device.Prepare(); err != nil {
+		panic(err)
+	}
+	channels, err := device.NegotiateChannels(1, 2)
+	if err != nil {
+		panic(err)
+	}
+	sampleRate, err := device.NegotiateRate(48000)
+	if err != nil {
+		panic(err)
+	}
+	format, err := device.NegotiateFormat(alsa.S16_LE, alsa.S32_LE)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Negotiated parameters: %d channels, %d hz, %v, %d period size, %d buffer size\n",
+		channels, sampleRate, format, periodSize, bufferSize)
 
 	// print .WAV info
 	wavinfo = wavReader.String()
@@ -77,19 +125,19 @@ func FromFile(filename string) (wavinfo string, err error) {
 	if samplerate > 100000 {
 		samplerate = 44100
 	}
-	fmt.Println(samplerate)
-	out, err := alsa.NewPlaybackDevice(defaultCard, 1, alsa.FormatS16LE, samplerate, alsa.BufferParams{})
-	if err != nil {
-		return wavinfo, errors.New(fmt.Sprint("alsa:", err))
-	}
+	// fmt.Println(samplerate)
+	// out, err := alsa.NewPlaybackDevice(defaultCard, 1, alsa.FormatS16LE, samplerate, alsa.BufferParams{})
+	// if err != nil {
+	// 	return wavinfo, errors.New(fmt.Sprint("alsa:", err))
+	// }
 
 	// require ALSA device
-	if out == nil {
-		return wavinfo, errors.New("nil ALSA device")
-	}
+	// if out == nil {
+	// 	return wavinfo, errors.New("nil ALSA device")
+	// }
 
 	// close device when finished
-	defer out.Close()
+	// defer out.Close()
 
 	for {
 		s, err := wavReader.ReadSampleEvery(2, 0)
@@ -97,9 +145,19 @@ func FromFile(filename string) (wavinfo string, err error) {
 		for _, b := range s {
 			cvert = append(cvert, int16(b))
 		}
+
+		bytepcm := make([]byte, len(cvert))
+
+		for i := range cvert {
+			bytepcm[i] = int16tobyte(cvert[i])
+		}
+
 		if cvert != nil {
 			// play!
-			out.Write(cvert)
+			// out.Write(cvert)
+			if err := device.Write(bytepcm, periodSize); err != nil {
+				panic(err)
+			}
 		}
 		cvert = []int16{}
 
