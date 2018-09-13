@@ -114,16 +114,16 @@ func FromFile(filename string) (wavinfo string, err error) {
 		channels, sampleRate, format, periodSize, bufferSize)
 
 	// print .WAV info
-	wavinfo = wavReader.String()
-	fileinfo := wavReader.GetFile()
+	// wavinfo = wavReader.String()
+	// fileinfo := wavReader.GetFile()
 	// open default ALSA playback device
-	samplerate := int(fileinfo.SampleRate)
-	if samplerate == 0 {
-		samplerate = 44100
-	}
-	if samplerate > 100000 {
-		samplerate = 44100
-	}
+	// samplerate := int(fileinfo.SampleRate)
+	// if samplerate == 0 {
+	// 	samplerate = 44100
+	// }
+	// if samplerate > 100000 {
+	// 	samplerate = 44100
+	// }
 	// fmt.Println(samplerate)
 	// out, err := alsa.NewPlaybackDevice(defaultCard, 1, alsa.FormatS16LE, samplerate, alsa.BufferParams{})
 	// if err != nil {
@@ -139,6 +139,7 @@ func FromFile(filename string) (wavinfo string, err error) {
 	// defer out.Close()
 
 	for {
+		fmt.Println("in")
 		s, err := wavReader.ReadSampleEvery(2, 0)
 		var cvert []int16
 		for _, b := range s {
