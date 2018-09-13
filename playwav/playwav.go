@@ -139,7 +139,6 @@ func FromFile(filename string) (wavinfo string, err error) {
 	// defer out.Close()
 
 	for {
-		fmt.Println("in")
 		s, err := wavReader.ReadSampleEvery(2, 0)
 		var cvert []int16
 		for _, b := range s {
@@ -155,6 +154,10 @@ func FromFile(filename string) (wavinfo string, err error) {
 		if cvert != nil {
 			// play!
 			// out.Write(cvert)
+			fmt.Println("before")
+			fmt.Println(cvert)
+			fmt.Println("after")
+			fmt.Println(bytepcm)
 			if err := device.Write(bytepcm, periodSize); err != nil {
 				panic(err)
 			}
