@@ -28,9 +28,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/joeky888/alsa"
 	"github.com/cryptix/wav"
-
+	"github.com/joeky888/alsa"
 )
 
 func int16tobyte(x int16) uint8 {
@@ -103,7 +102,7 @@ func FromFile(filename string) (wavinfo string, err error) {
 	if err != nil {
 		panic(err)
 	}
-	sampleRate, err := device.NegotiateRate(48000)
+	sampleRate, err := device.NegotiateRate(44100, 48000)
 	if err != nil {
 		panic(err)
 	}
