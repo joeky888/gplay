@@ -33,8 +33,8 @@ import (
 )
 
 func int16tobyte(x int16) uint8 {
-	buf := int32(x)
-	return uint8((buf + 32768) * (255 - 0) / (32767 + 32768))
+	// From https://stackoverflow.com/questions/24449957/converting-a-8-bit-pcm-to-16-bit-pcm
+	return uint8((x >> 8) + 128)
 }
 
 func FromFile(filename string) (wavinfo string, err error) {
