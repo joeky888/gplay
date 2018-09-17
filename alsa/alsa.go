@@ -139,7 +139,8 @@ func (d *device) createDevice(deviceName string, channels int, format Format, ra
 	var periods = C.uint(0)
 	ret = C.snd_pcm_hw_params_get_periods(hwParams, &periods, nil)
 	if ret < 0 {
-		return createError("could not get periods", ret)
+		periods = C.uint(0)
+// 		return createError("could not get periods", ret)
 	}
 	ret = C.snd_pcm_hw_params(d.h, hwParams)
 	if ret < 0 {
