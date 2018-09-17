@@ -84,8 +84,7 @@ func (d *device) createDevice(deviceName string, channels int, format Format, ra
 		ret = C.snd_pcm_open(&d.h, deviceCString, C.SND_PCM_STREAM_CAPTURE, 0)
 	}
 	if ret < 0 {
-		fmt.Println("could not open ALSA device, error code:")
-		fmt.Println(ret)
+		return fmt.Errorf("could not open ALSA device, error code: %d", ret)
 	}
 	runtime.SetFinalizer(d, (*device).Close)
 	var hwParams *C.snd_pcm_hw_params_t
