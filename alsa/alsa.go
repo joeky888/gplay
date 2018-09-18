@@ -137,10 +137,10 @@ func (d *device) createDevice(deviceName string, channels int, format Format, ra
 		return fmt.Errorf("could not set period size, error code: %d", ret)
 	}
 	var periods = C.uint(0)
-	// ret = C.snd_pcm_hw_params_get_periods(hwParams, &periods, nil)
-	// if ret < 0 {
-	// 	return fmt.Errorf("could not get periods, error code: %d", ret)
-	// }
+	ret = C.snd_pcm_hw_params_get_periods(hwParams, &periods, nil)
+	if ret < 0 {
+		return fmt.Errorf("could not get periods, error code: %d", ret)
+	}
 	ret = C.snd_pcm_hw_params(d.h, hwParams)
 	if ret < 0 {
 		return fmt.Errorf("could not set hw params, error code: %d", ret)
