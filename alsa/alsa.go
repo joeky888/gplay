@@ -90,40 +90,40 @@ func (d *device) createDevice(deviceName string, channels int, format Format, ra
 	var hwParams *C.snd_pcm_hw_params_t
 	ret = C.snd_pcm_hw_params_malloc(&hwParams)
 	if ret < 0 {
-		return createError("could not alloc hw params", ret)
+		return fmt.Errorf("could not alloc hw params, error code: %d", ret)
 	}
 	defer C.snd_pcm_hw_params_free(hwParams)
 	ret = C.snd_pcm_hw_params_any(d.h, hwParams)
 	if ret < 0 {
-		return createError("could not set default hw params", ret)
+		return fmt.Errorf("could not set default hw params, error code: %d", ret)
 	}
 	ret = C.snd_pcm_hw_params_set_access(d.h, hwParams, C.SND_PCM_ACCESS_RW_INTERLEAVED)
 	if ret < 0 {
-		return createError("could not set access params", ret)
+		return fmt.Errorf("could not set access params, error code: %d", ret)
 	}
 	ret = C.snd_pcm_hw_params_set_format(d.h, hwParams, C.snd_pcm_format_t(format))
 	if ret < 0 {
-		return createError("could not set format params", ret)
+		return fmt.Errorf("could not set format params, error code: %d", ret)
 	}
 	ret = C.snd_pcm_hw_params_set_channels(d.h, hwParams, C.uint(channels))
 	if ret < 0 {
-		return createError("could not set channels params", ret)
+		return fmt.Errorf("could not set channels params, error code: %d", ret)
 	}
 	ret = C.snd_pcm_hw_params_set_rate(d.h, hwParams, C.uint(rate), 0)
 	if ret < 0 {
-		return createError("could not set rate params", ret)
+		return fmt.Errorf("could not set rate params, error code: %d", ret)
 	}
 	var bufferSize = C.snd_pcm_uframes_t(bufferParams.BufferFrames)
 	if bufferParams.BufferFrames == 0 {
 		// Default buffer size: max buffer size
 		ret = C.snd_pcm_hw_params_get_buffer_size_max(hwParams, &bufferSize)
 		if ret < 0 {
-			return createError("could not get buffer size", ret)
+			return fmt.Errorf("could not get buffer size, error code: %d", ret)
 		}
 	}
 	ret = C.snd_pcm_hw_params_set_buffer_size_near(d.h, hwParams, &bufferSize)
 	if ret < 0 {
-		return createError("could not set buffer size", ret)
+		return fmt.Errorf("could not set buffer size, error code: %d", ret)
 	}
 	// Default period size: 1/8 of a second
 	var periodFrames = C.snd_pcm_uframes_t(rate / 8)
@@ -134,16 +134,16 @@ func (d *device) createDevice(deviceName string, channels int, format Format, ra
 	}
 	ret = C.snd_pcm_hw_params_set_period_size_near(d.h, hwParams, &periodFrames, nil)
 	if ret < 0 {
-		return createError("could not set period size", ret)
+		return fmt.Errorf("could not set period size, error code: %d", ret)
 	}
 	var periods = C.uint(0)
 	ret = C.snd_pcm_hw_params_get_periods(hwParams, &periods, nil)
 	if ret < 0 {
-		return createError("could not get periods", ret)
+		return fmt.Errorf("could not get periods, error code: %d", ret)
 	}
 	ret = C.snd_pcm_hw_params(d.h, hwParams)
 	if ret < 0 {
-		return createError("could not set hw params", ret)
+		return fmt.Errorf("could not set hw params, error code: %d", ret)
 	}
 	d.frames = int(periodFrames)
 	d.Channels = channels
