@@ -193,7 +193,7 @@ func (enc *Encoder) Encode(pcm []int16, data []byte) (int, error) {
 		(*C.uchar)(&data[0]),
 		C.opus_int32(cap(data))))
 	if n < 0 {
-		fmt.Println("Error: n < 0")
+		fmt.Println("Error: n < 0, n = %d", n)
 	}
 	return n, nil
 }
