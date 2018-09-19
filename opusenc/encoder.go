@@ -110,6 +110,17 @@ const (
 	Fullband = Bandwidth(C.OPUS_BANDWIDTH_FULLBAND)
 )
 
+type Application int
+
+const (
+	// Optimize encoding for VoIP
+	AppVoIP = Application(C.OPUS_APPLICATION_VOIP)
+	// Optimize encoding for non-voice signals like music
+	AppAudio = Application(C.OPUS_APPLICATION_AUDIO)
+	// Optimize encoding for low latency applications
+	AppRestrictedLowdelay = Application(C.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+)
+
 var errEncUninitialized = fmt.Errorf("opus encoder uninitialized")
 
 // Encoder contains the state of an Opus encoder for libopus.
@@ -152,7 +163,7 @@ func (enc *Encoder) Init(sample_rate int, channels int, application Application)
 		C.int(channels),
 		C.int(application)))
 	if errno != 0 {
-		return Error(int(errno))
+		fmt.Println(int(errno))
 	}
 	return nil
 }
@@ -182,7 +193,7 @@ func (enc *Encoder) Encode(pcm []int16, data []byte) (int, error) {
 		(*C.uchar)(&data[0]),
 		C.opus_int32(cap(data))))
 	if n < 0 {
-		return 0, Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return n, nil
 }
@@ -210,7 +221,7 @@ func (enc *Encoder) EncodeFloat32(pcm []float32, data []byte) (int, error) {
 		(*C.uchar)(&data[0]),
 		C.opus_int32(cap(data))))
 	if n < 0 {
-		return 0, Error(n)
+		fmt.Println("Error: n < 0")
 	}
 	return n, nil
 }
@@ -223,7 +234,7 @@ func (enc *Encoder) SetDTX(dtx bool) error {
 	}
 	res := C.bridge_encoder_set_dtx(enc.p, C.opus_int32(i))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -234,7 +245,7 @@ func (enc *Encoder) DTX() (bool, error) {
 	var dtx C.opus_int32
 	res := C.bridge_encoder_get_dtx(enc.p, &dtx)
 	if res != C.OPUS_OK {
-		return false, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return dtx != 0, nil
 }
@@ -244,7 +255,7 @@ func (enc *Encoder) SampleRate() (int, error) {
 	var sr C.opus_int32
 	res := C.bridge_encoder_get_sample_rate(enc.p, &sr)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return int(sr), nil
 }
@@ -253,7 +264,7 @@ func (enc *Encoder) SampleRate() (int, error) {
 func (enc *Encoder) SetBitrate(bitrate int) error {
 	res := C.bridge_encoder_set_bitrate(enc.p, C.opus_int32(bitrate))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -262,7 +273,7 @@ func (enc *Encoder) SetBitrate(bitrate int) error {
 func (enc *Encoder) SetBitrateToAuto() error {
 	res := C.bridge_encoder_set_bitrate(enc.p, C.opus_int32(C.OPUS_AUTO))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -272,7 +283,7 @@ func (enc *Encoder) SetBitrateToAuto() error {
 func (enc *Encoder) SetBitrateToMax() error {
 	res := C.bridge_encoder_set_bitrate(enc.p, C.opus_int32(C.OPUS_BITRATE_MAX))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -282,7 +293,7 @@ func (enc *Encoder) Bitrate() (int, error) {
 	var bitrate C.opus_int32
 	res := C.bridge_encoder_get_bitrate(enc.p, &bitrate)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return int(bitrate), nil
 }
@@ -291,7 +302,7 @@ func (enc *Encoder) Bitrate() (int, error) {
 func (enc *Encoder) SetComplexity(complexity int) error {
 	res := C.bridge_encoder_set_complexity(enc.p, C.opus_int32(complexity))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -301,7 +312,7 @@ func (enc *Encoder) Complexity() (int, error) {
 	var complexity C.opus_int32
 	res := C.bridge_encoder_get_complexity(enc.p, &complexity)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return int(complexity), nil
 }
@@ -311,7 +322,7 @@ func (enc *Encoder) Complexity() (int, error) {
 func (enc *Encoder) SetMaxBandwidth(maxBw Bandwidth) error {
 	res := C.bridge_encoder_set_max_bandwidth(enc.p, C.opus_int32(maxBw))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -321,7 +332,7 @@ func (enc *Encoder) MaxBandwidth() (Bandwidth, error) {
 	var maxBw C.opus_int32
 	res := C.bridge_encoder_get_max_bandwidth(enc.p, &maxBw)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return Bandwidth(maxBw), nil
 }
@@ -335,7 +346,7 @@ func (enc *Encoder) SetInBandFEC(fec bool) error {
 	}
 	res := C.bridge_encoder_set_inband_fec(enc.p, C.opus_int32(i))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -345,7 +356,7 @@ func (enc *Encoder) InBandFEC() (bool, error) {
 	var fec C.opus_int32
 	res := C.bridge_encoder_get_inband_fec(enc.p, &fec)
 	if res != C.OPUS_OK {
-		return false, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return fec != 0, nil
 }
@@ -354,7 +365,7 @@ func (enc *Encoder) InBandFEC() (bool, error) {
 func (enc *Encoder) SetPacketLossPerc(lossPerc int) error {
 	res := C.bridge_encoder_set_packet_loss_perc(enc.p, C.opus_int32(lossPerc))
 	if res != C.OPUS_OK {
-		return Error(res)
+		fmt.Println(res)
 	}
 	return nil
 }
@@ -364,7 +375,7 @@ func (enc *Encoder) PacketLossPerc() (int, error) {
 	var lossPerc C.opus_int32
 	res := C.bridge_encoder_get_packet_loss_perc(enc.p, &lossPerc)
 	if res != C.OPUS_OK {
-		return 0, Error(res)
+		fmt.Println("Error: res < 0")
 	}
 	return int(lossPerc), nil
 }
