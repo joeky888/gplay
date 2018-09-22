@@ -114,12 +114,12 @@ func goHandlePipelineBuffer(buffer unsafe.Pointer, bufferLen C.int, duration C.i
 			samples = uint32(audioClockRate * (float32(duration) / 1000000000))
 			// fmt.Println(C.GoBytes(buffer, bufferLen))
 			// fmt.Println(samples)
-			_, err := dec.Decode(C.GoBytes(buffer, bufferLen), pcm)
+			_, err := dec.Decode(C.GoBytes(buffer, bufferLen)[12:], pcm)
 			if err != nil {
 				panic(err)
 			}
 			fmt.Println()
-			fmt.Println(C.GoBytes(buffer, bufferLen))
+			fmt.Println(C.GoBytes(buffer, bufferLen)[12:])
 			fmt.Println(pcm)
 			fmt.Println()
 			player.Write(pcm)
