@@ -28,12 +28,17 @@ const (
 )
 
 var player *alsa.PlaybackDevice
+var dec *opusdec.Decoder
 var ctrlc = make(chan os.Signal)
 
 func init() {
 	var err error
 	player, err = alsa.NewPlaybackDevice("default", channels, format, audioClockRate,
 		alsa.BufferParams{BufferFrames: 0, PeriodFrames: 960, Periods: 960})
+	if err != nil {
+		panic(err)
+	}
+	dec, err = opusdec.NewDecoder(audioClockRate, channels)
 	if err != nil {
 		panic(err)
 	}
@@ -102,10 +107,6 @@ func goHandlePipelineBuffer(buffer unsafe.Pointer, bufferLen C.int, duration C.i
 	defer pipelinesLock.Unlock()
 
 	pcm := make([]int16, 960)
-	dec, err := opusdec.NewDecoder(audioClockRate, 2)
-	if err != nil {
-		panic(err)
-	}
 
 	if pipeline, ok := pipelines[int(pipelineID)]; ok {
 		var samples uint32
