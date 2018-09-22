@@ -8,23 +8,23 @@ package gst
 */
 import "C"
 import (
-	"os"
-	"syscall"
-	"os/signal"
 	"fmt"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"unsafe"
 
-	"github.com/joeky888/gplay/opusdec"
 	"github.com/joeky888/gplay/alsa"
+	"github.com/joeky888/gplay/opusdec"
 	"github.com/pions/webrtc"
 )
 
 const (
 	videoClockRate = 90000
 	audioClockRate = 48000
-	channels = 1
-	format = alsa.FormatS16LE
+	channels       = 1
+	format         = alsa.FormatS16LE
 )
 
 var player *alsa.PlaybackDevice
@@ -118,7 +118,10 @@ func goHandlePipelineBuffer(buffer unsafe.Pointer, bufferLen C.int, duration C.i
 			if err != nil {
 				panic(err)
 			}
+			fmt.Println()
+			fmt.Println(C.GoBytes(buffer, bufferLen))
 			fmt.Println(pcm)
+			fmt.Println()
 			player.Write(pcm)
 		} else {
 			samples = uint32(videoClockRate * (float32(duration) / 1000000000))
